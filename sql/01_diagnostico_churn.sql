@@ -15,18 +15,22 @@ SELECT
 FROM 
 	public.wa_fn_usec;
 
--- 2. Volume de cancelamentos (Churn)
-SELECT 
-	"Churn" AS status_cliente,
-	COUNT(*) AS total_clientes
+-- 2. Volume e taxa de cancelamento: quantos clientes saíram e quanto isso representa da base
+
+SELECT
+	"Churn" AS status_cliente, 
+	COUNT(*) AS total_clientes,
+	SUM(COUNT(*))OVER() AS total_geral,
+	ROUND(COUNT(*)*100.0/SUM(COUNT(*))OVER(),2) AS taxa_pct
 FROM public.wa_fn_usec
 GROUP BY "Churn";
 
--- 3. Auditoria de valores vazios na coluna TotalCharges
+--3. Clientes com faturamento total igual a zero 
+--(clientes novos, tenure 0, corrigidos no 00_correcao_tipos.sql)
 SELECT 
 	COUNT(*) AS faturas_vazias
-FROM public."wa_fn_usec" 
-WHERE cardinality("TotalCharges") = 0;
+FROM public.wa_fn_usec 
+WHERE "TotalCharges" = 0;
 
 ---------------------------------------------------
 -- FASE 2: MINERAÇÃO DE DADOS E COMPORTAMENTO
